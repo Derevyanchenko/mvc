@@ -1,0 +1,19 @@
+// tips
+
+
+1.) Настройки базы данных:
+
+    - в app/config/db_params.php;
+
+2.) Роуты:
+
+    - в app/config/routes.php;
+
+
+3.) В models - работа с базой, запросы;
+
+4.) В Controllers получение данных и показ видов;
+
+
+
+
