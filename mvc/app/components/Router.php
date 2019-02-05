@@ -35,7 +35,7 @@ class Router
 			// Сравниваем $uriPattern and path
 
 			if( preg_match("~$uriPattern~", $uri) ) {
-				echo $path;
+				// echo $path;
 				// url = mvc/products выведет product/list
 
 				// Определить какой контроллер и экшн обрабатывают запрос
@@ -46,8 +46,8 @@ class Router
 
 				$actionName = "action".ucfirst(array_shift($segments));
 
-				echo "<br>Class: ". $controllerName;
-				echo "<br>Action: ". $actionName;
+				// echo "<br>Class: ". $controllerName;
+				// echo "<br>Action: ". $actionName;
 
 				// Подключить файл класса контроллера
 
