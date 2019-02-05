@@ -24,6 +24,7 @@ class Router
 	public function run()
 	{
 		// получить строку запроса
+		
 
 		$uri = $this->getURI();
 
@@ -75,4 +76,3 @@ class Router
 
 }
 
-?>
