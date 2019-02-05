@@ -1,0 +1,242 @@
+
+example structure:
+
+	project
+		-app
+			- components
+				- Router.php
+			config
+				- routes.php
+			- controllers
+				- ArcticleController.php
+				- NewsController.php
+				- ProductController.php
+			- models
+				-Article.php
+				-News.php
+				-Product.php
+			- views
+				-article
+				- news
+					- arhive.php
+					- index.php
+					- view.php
+				- product
+			.htaccess
+			index.php
+		- incluses
+
+------------------------------------------------------------------------------
+
+Цикл работы и заметки:
+
+user -> ( Запрос ( /news/list ) ) -> Front Controller
+									-----------------
+									1) Общие настройки
+									2) Подключение файлов
+									3) Установка соединения с БД
+
+NewsController			   <----	Router ( Router.php )
+	actionList()
+	actionView()					4) Анализ запроса
+									5) Подключение контроллера
+									6) Передача управления контроллеру
+	|		|
+	|		|
+	|		|
+view 		model
+
+
+------------------------------------------------------------------------------
+
+.htaccess:
+
+	Options +FollowSymLinks
+	RewriteEngine On
+
+	RewriteCond %{REQUEST_FILENAME} !-d
+	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteRule ^ index.php [L]
+
+
+
+Пишем FrontController ( index.php ):
+
+	<?php 
+	
+		// FRONT CONTROLLER
+
+		echo "FrontController";
+
+		// 1) Общие настройки
+
+		ini_set("display_errors", 1);
+		error_reporting(E_ALL);
+
+		// 2) Подключение файлов системы
+
+		define('ROOT', dirname(__FILE__));
+		require_once(ROOT."/components/Router.php");
+		
+		// 3) Установка соединения с БД
+
+		// 4) Вызов Router
+
+		$router = new Router();
+		$router->run();
+
+?>
+
+
+Проверяем работу Роута:
+
+<?php  
+
+/**
+ * 
+ */
+class Router
+{
+
+	private $routes; // Массив роутов
+	
+	function __construct()
+	{
+		$routesPath = ROOT."/config/routes.php";
+		$this->routes = include($routesPath);.
+	}
+
+	public function run()
+	{
+		echo "class Router method Run";
+		print_r($this->routes); // выведем массив роутов для дебага
+	}
+
+}
+
+?>
+
+
+------------------------------------------------------------------------------
+
+- Пишем роуты:
+
+in config/routes.php:
+
+	<?php 
+
+		return array(
+			"news"     => "news/index",
+			"products" => "product/list",
+		);
+
+	?>
+
+
+------------------------------------------------------------------------------
+
+
+- Готовый Роутер:
+<?php  
+
+/**
+ * 
+ */
+class Router
+{
+
+	private $routes; // Массив роутов
+	
+	function __construct()
+	{
+		$routesPath = ROOT."/config/routes.php";
+		$this->routes = include($routesPath);
+	}
+
+	private function getURI()
+	{
+		if(!empty( $_SERVER["REQUEST_URI"] )) {
+			return trim( $_SERVER["REQUEST_URI"], "");
+		}
+	}
+
+	public function run()
+	{
+		// получить строку запроса
+
+		$uri = $this->getURI();
+
+		// Проверить наличие такого запроса в routes.php
+
+		foreach ($this->routes as $uriPattern => $path) {
+			
+			// Сравниваем $uriPattern and path
+
+			if( preg_match("~$uriPattern~", $uri) ) {
+				echo $path;
+				// url = mvc/products выведет product/list
+
+				// Определить какой контроллер и экшн обрабатывают запрос
+
+				$segments = explode("/", $path);
+				$controllerName = array_shift($segments)."Controller";
+				$controllerName = ucfirst($controllerName);
+
+				$actionName = "action".ucfirst(array_shift($segments));
+
+				echo "<br>Class: ". $controllerName;
+				echo "<br>Action: ". $actionName;
+
+				// Подключить файл класса контроллера
+
+				$controllerFile = ROOT . "/controllers/" . $controllerName . ".php";
+
+				if(file_exists($controllerFile)) {
+					include_once ( $controllerFile );
+				}
+
+				// Создать обьект, вызвать метод ( экшн )
+
+				$controllerObject = new $controllerName;
+
+				$result = $controllerObject->$actionName();
+
+				if( $result != null ) {
+					break;
+				}
+
+			}
+
+
+
+		}
+	}
+
+}
+
+?>
+
+// Простой контроллер NewsController:
+
+<?php  
+
+/**
+ * 
+ */
+class NewsController
+{
+	
+	function __construct()
+	{
+		# code...
+	}
+
+	public function actionIndex()
+	{
+		echo "NewsController actionIndex";
+		return true;
+	}
+
+}
+
+?>
